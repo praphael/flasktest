@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Home</title>
+</head>
+<body>
+    <h1>Welcome, {{ username }}!</h1>
+    <h2>Posts:</h2>
+    <ul>
+        {% for post in posts %}
+            <li>
+                <strong>{{ post.username }}</strong>
+                <span>{{ post.timestamp }}</span>
+                <p>{{ post.content }}</p>
+            </li>
+        {% endfor %}
+    </ul>
+    <h2>Post something:</h2>
+    <form action="/post" method="post">
+        <textarea name="content" cols="30" rows="5" required></textarea><br>
+        <input type="submit" value="Post">
+    </form>
+    <br>
+    <a href="/logout">Logout</a>
+</body>
+</html>
