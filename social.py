@@ -1,6 +1,7 @@
 from flask import Flask, render_template, request, redirect, url_for, session
-from datetime import datetime
+from datetime import datetime, timedelta
 import argparse
+import json
 
 app = Flask(__name__)
 app.secret_key = 'your_secret_key'
@@ -28,6 +29,25 @@ def home():
     for f in friends[uname]:
         friendPosts = friendPosts + posts[f]
     return render_template('home.html', username=uname, posts=friendPosts)
+
+@app.route('/getfeed/<uname>')
+def getfeed(uname):
+    maxPosts = 10
+    feed = []
+    
+    for f in friends[uname]:
+        for p in posts[f]:
+            t = p['timestamp']
+            if len(feed) >= maxPosts:
+                if(feed[-1]['timestamp'] > t):
+                    continue
+                        
+            feed_p = {'user': f, 'content': p['content'], 'timestamp': t}
+            feed.append(feed_p)
+            feed.sort(key=lambda x: x['timestamp'])
+            
+    friendPosts = {'posts' : feed}
+    return json.dumps(friendPosts)
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -67,8 +87,8 @@ def post():
     return redirect(url_for('home'))
 
 def addTestData(numUsers=1000, postsPerUser=100, friendsPerUser=10):
-    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-
+    t1 = datetime.now()
+    
     for u in range(3, numUsers):
         uname = 'user' + str(u)
         if u%100 == 0:
@@ -84,8 +104,10 @@ def addTestData(numUsers=1000, postsPerUser=100, friendsPerUser=10):
         # add posts
         for p in range(postsPerUser):
             pnum = postsPerUser*u + p
+            dt = timedelta(hours=p)
             posttxt = 'post' + str(pnum) + ' ' + loremIpsum
-            posts[uname].append({'content': posttxt, 'timestamp': timestamp})
+            tstamp = (t1-dt).strftime("%Y-%m-%d %H:%M:%S")
+            posts[uname].append({'content': posttxt, 'timestamp': tstamp})
 
 if __name__ == '__main__':
     defaultHost = '127.0.0.1'
